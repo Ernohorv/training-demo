@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: nginx-appset
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - region: eu10
+            cluster: in-cluster
+          - region: us10
+            cluster: in-cluster
+
+  template:
+    metadata:
+      name: nginx-{{region}}
+
+    spec:
+      project: default
+
+      source:
+        repoURL: https://github.com/Ernohorv/training.demo.git
+        targetRevision: main
+        path: overlays/{{region}}
+
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: nginx-{{region}}
+
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
